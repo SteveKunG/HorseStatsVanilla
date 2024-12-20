@@ -34,7 +34,7 @@ public abstract class HorseEntityMixin extends AbstractHorseEntity {
 
 
     @Inject(at = @At("HEAD"), method = "interactMob")
-    public ActionResult interactMob(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> ret) {
+    public void interactMob(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> ret) {
         if(config == null) {
             config = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
         }
@@ -42,18 +42,17 @@ public abstract class HorseEntityMixin extends AbstractHorseEntity {
         if (config.showValue() && !this.isTame() && player.shouldCancelInteraction() && (config == null || config.isTooltipEnabled())) {
             // Show tooltip
             DecimalFormat df = new DecimalFormat("#.#");
-            String jumpStrength = df.format( Converter.jumpStrengthToJumpHeight(this.getAttributeValue(EntityAttributes.GENERIC_JUMP_STRENGTH)) );
+            String jumpStrength = df.format( Converter.jumpStrengthToJumpHeight(this.getAttributeValue(EntityAttributes.JUMP_STRENGTH)) );
             String maxHealth = df.format(this.getMaxHealth());
-            String speed = df.format(Converter.genericSpeedToBlocPerSec(this.getAttributes().getValue(EntityAttributes.GENERIC_MOVEMENT_SPEED)));
+            String speed = df.format(Converter.genericSpeedToBlocPerSec(this.getAttributes().getValue(EntityAttributes.MOVEMENT_SPEED)));
             
             double jumpValue = new BigDecimal(jumpStrength.replace(',', '.')).doubleValue();
             double speedValue = new BigDecimal(speed.replace(',', '.')).doubleValue();
             int healthValue = new BigDecimal(maxHealth.replace(',', '.')).intValue();
 
-            MinecraftClient.getInstance().setScreen(
+            MinecraftClient.getInstance().execute(() -> MinecraftClient.getInstance().setScreen(
                 new ToolTipGui(new Tooltip(speedValue, jumpValue, healthValue))
-            );
+            ));
         }
-        return ret.getReturnValue();
     }
 }
